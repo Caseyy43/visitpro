@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VisitPro — Samsung MX Terr14</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0a0f;--surface:#13131a;--surface2:#1c1c27;--surface3:#252535;--border:#2a2a3d;
+    --accent:#1428a0;--accent-bright:#1f3ef5;--accent-glow:rgba(31,62,245,0.15);
+    --green:#00c853;--green-dim:rgba(0,200,83,0.12);
+    --amber:#ffab00;--amber-dim:rgba(255,171,0,0.12);
+    --red:#ff3d57;--red-dim:rgba(255,61,87,0.12);
+    --purple:#a855f7;--purple-dim:rgba(168,85,247,0.12);
+    --text:#e8e8f0;--text-dim:#7070a0;--text-muted:#40405a;
+    --font-d:'Syne',sans-serif;--font-b:'DM Sans',sans-serif;--font-m:'DM Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height:100vh;overflow-x:hidden}
+  .shell{display:flex;min-height:100vh}
+
+  /* SIDEBAR */
+  .sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
+  .sidebar-logo{padding:24px 20px 20px;border-bottom:1px solid var(--border)}
+  .logo-mark{font-family:var(--font-d);font-size:11px;font-weight:800;letter-spacing:.15em;text-transform:uppercase;color:var(--text-dim);margin-bottom:4px}
+  .logo-name{font-family:var(--font-d);font-size:17px;font-weight:800;color:var(--text);line-height:1}
+  .logo-name span{color:var(--accent-bright)}
+  nav{flex:1;padding:16px 0}
+  .nav-sec{padding:8px 16px 4px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted);font-family:var(--font-m)}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;font-size:13.5px;font-weight:500;color:var(--text-dim);transition:all .15s;border-left:2px solid transparent;margin:1px 0}
+  .nav-item:hover{color:var(--text);background:var(--surface2)}
+  .nav-item.active{color:var(--text);background:var(--accent-glow);border-left-color:var(--accent-bright)}
+  .nav-icon{font-size:16px;width:20px;text-align:center}
+  .month-chip{margin:16px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px}
+  .month-label{font-size:10px;color:var(--text-muted);font-family:var(--font-m);text-transform:uppercase;letter-spacing:.1em}
+  .month-value{font-size:15px;font-weight:600;color:var(--text);margin-top:3px}
+
+  /* MAIN */
+  .main{margin-left:220px;flex:1;display:flex;flex-direction:column}
+  .topbar{height:56px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 28px;gap:16px;position:sticky;top:0;z-index:50}
+  .topbar-title{font-family:var(--font-d);font-size:15px;font-weight:700;flex:1}
+  .content{padding:28px;flex:1}
+  .view{display:none}
+  .view.active{display:block}
+
+  /* BUTTONS */
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;font-family:var(--font-b)}
+  .btn-primary{background:var(--accent-bright);color:#fff}
+  .btn-primary:hover{background:#2a50ff;transform:translateY(-1px)}
+  .btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+  .btn-ghost:hover{background:var(--surface3)}
+  .btn-danger{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,61,87,.25)}
+  .btn-purple{background:var(--purple-dim);color:var(--purple);border:1px solid rgba(168,85,247,.25)}
+
+  /* KPI CARDS */
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+  .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden}
+  .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+  .kpi-card.green::before{background:var(--green)}
+  .kpi-card.amber::before{background:var(--amber)}
+  .kpi-card.red::before{background:var(--red)}
+  .kpi-card.blue::before{background:var(--accent-bright)}
+  .kpi-card.purple::before{background:var(--purple)}
+  .kpi-label{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;font-family:var(--font-m)}
+  .kpi-value{font-family:var(--font-d);font-size:36px;font-weight:800;line-height:1;margin:8px 0 4px}
+  .kpi-sub{font-size:12px;color:var(--text-dim)}
+  .kpi-card.green .kpi-value{color:var(--green)}
+  .kpi-card.amber .kpi-value{color:var(--amber)}
+  .kpi-card.red .kpi-value{color:var(--red)}
+  .kpi-card.blue .kpi-value{color:var(--accent-bright)}
+  .kpi-card.purple .kpi-value{color:var(--purple)}
+
+  /* CHARTS */
+  .charts-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px}
+  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+  .chart-title{font-size:12px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;font-family:var(--font-m);margin-bottom:16px}
+
+  /* TABLE */
+  .table-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .table-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
+  .table-header-title{font-size:13px;font-weight:600}
+  .filter-row{display:flex;gap:8px;padding:12px 20px;border-bottom:1px solid var(--border);background:var(--surface2);flex-wrap:wrap}
+  .filter-chip{padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface3);color:var(--text-dim);transition:all .15s;font-family:var(--font-m)}
+  .filter-chip.active{background:var(--accent-bright);color:#fff;border-color:var(--accent-bright)}
+  .filter-chip:hover:not(.active){color:var(--text)}
+  table{width:100%;border-collapse:collapse}
+  th{padding:10px 16px;text-align:left;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);font-family:var(--font-m);background:var(--surface2);border-bottom:1px solid var(--border)}
+  td{padding:11px 16px;font-size:13px;border-bottom:1px solid rgba(42,42,61,.5);vertical-align:middle}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:rgba(255,255,255,.02)}
+
+  /* BADGES */
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:600;font-family:var(--font-m)}
+  .badge-green{background:var(--green-dim);color:var(--green)}
+  .badge-amber{background:var(--amber-dim);color:var(--amber)}
+  .badge-red{background:var(--red-dim);color:var(--red)}
+  .badge-blue{background:var(--accent-glow);color:var(--accent-bright)}
+  .badge-purple{background:var(--purple-dim);color:var(--purple)}
+
+  /* NETWORK PILLS */
+  .network-pill{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;font-family:var(--font-m)}
+  .pill-O2{background:rgba(0,100,200,.15);color:#4d9eff}
+  .pill-EE{background:rgba(0,180,80,.15);color:#00c853}
+  .pill-Tesco{background:rgba(0,100,200,.12);color:#5599ff}
+  .pill-Currys{background:rgba(80,0,200,.15);color:#a06aff}
+  .pill-Vodafone{background:rgba(200,0,50,.15);color:#ff4d6a}
+  .pill-H3G{background:rgba(200,100,0,.15);color:#ffaa33}
+
+  /* PROGRESS */
+  .progress-bar{height:5px;border-radius:3px;background:var(--surface3);overflow:hidden;width:80px;display:inline-block;vertical-align:middle;margin-right:8px}
+  .progress-fill{height:100%;border-radius:3px;transition:width .3s}
+  .fill-green{background:var(--green)}
+  .fill-amber{background:var(--amber)}
+  .fill-red{background:var(--red)}
+  .fill-purple{background:var(--purple)}
+
+  /* MODAL */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center}
+  .modal-backdrop.open{display:flex}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:540px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.6)}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:1}
+  .modal-head h2{font-family:var(--font-d);font-size:18px;font-weight:800}
+  .modal-close{background:none;border:none;color:var(--text-dim);font-size:20px;cursor:pointer;padding:4px}
+  .modal-body{padding:24px}
+  .modal-foot{display:flex;gap:10px;justify-content:flex-end;padding:16px 24px;border-top:1px solid var(--border)}
+  .form-group{margin-bottom:18px}
+  label{display:block;font-size:12px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.08em;font-family:var(--font-m);margin-bottom:6px}
+  select,input[type="text"],input[type="date"],input[type="number"],textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 12px;font-size:14px;font-family:var(--font-b);outline:none;transition:border-color .15s}
+  select:focus,input:focus,textarea:focus{border-color:var(--accent-bright)}
+  .toggle-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .toggle-btn{padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text-dim);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;font-family:var(--font-b)}
+  .toggle-btn.selected-y{background:var(--green-dim);border-color:var(--green);color:var(--green)}
+  .toggle-btn.selected-n{background:var(--red-dim);border-color:var(--red);color:var(--red)}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  textarea{resize:vertical;min-height:80px}
+
+  /* VISIT LOG */
+  .visit-log-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;gap:16px}
+  .visit-store{font-size:14px;font-weight:600;flex:1}
+  .visit-date{font-size:12px;color:var(--text-dim);font-family:var(--font-m)}
+  .visit-meta{display:flex;gap:8px;flex-wrap:wrap}
+
+  /* NETWORK GRID */
+  .network-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+  .network-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+  .network-card-name{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;font-family:var(--font-m);color:var(--text-dim);margin-bottom:10px}
+  .network-stat{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .network-stat-label{font-size:12px;color:var(--text-dim)}
+  .network-stat-val{font-size:13px;font-weight:600}
+
+  /* SALES SPECIFIC */
+  .week-selector{display:flex;gap:8px;align-items:center;margin-bottom:20px;flex-wrap:wrap}
+  .week-btn{padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--text-dim);font-family:var(--font-m);transition:all .15s}
+  .week-btn.active{background:var(--purple);color:#fff;border-color:var(--purple)}
+  .week-btn:hover:not(.active){color:var(--text)}
+  .vs-bar{height:6px;border-radius:3px;background:var(--surface3);overflow:hidden;flex:1;margin:0 8px}
+  .vs-fill{height:100%;border-radius:3px}
+  .import-zone{border:2px dashed var(--border);border-radius:12px;padding:32px;text-align:center;background:var(--surface2);cursor:pointer;transition:all .2s}
+  .import-zone:hover{border-color:var(--purple);background:var(--purple-dim)}
+  .import-zone input{display:none}
+  .import-icon{font-size:36px;margin-bottom:12px}
+  .import-title{font-size:15px;font-weight:600;margin-bottom:6px}
+  .import-sub{font-size:13px;color:var(--text-dim)}
+  .import-status{margin-top:16px;padding:12px 16px;border-radius:8px;font-size:13px}
+  .import-status.success{background:var(--green-dim);color:var(--green);border:1px solid rgba(0,200,83,.25)}
+  .import-status.error{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,61,87,.25)}
+
+  /* RESET BANNER */
+  .reset-banner{background:var(--amber-dim);border:1px solid rgba(255,171,0,.25);border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .reset-banner-text{font-size:13px;color:var(--amber)}
+
+  /* MISC */
+  .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+  .section-title{font-family:var(--font-d);font-size:22px;font-weight:800}
+  .search-input{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 14px;font-size:13px;font-family:var(--font-b);outline:none;width:200px}
+  .search-input:focus{border-color:var(--accent-bright)}
+  .action-row{display:flex;gap:8px}
+  .empty-state{text-align:center;padding:60px 20px;color:var(--text-dim)}
+  .empty-icon{font-size:40px;margin-bottom:12px}
+  .divider{height:1px;background:var(--border);margin:20px 0}
+
+  ::-webkit-scrollbar{width:6px;height:6px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">Samsung MX · Terr14</div>
+      <div class="logo-name">Visit<span>Pro</span></div>
+    </div>
+    <nav>
+      <div class="nav-sec">Main</div>
+      <div class="nav-item active" onclick="showView('dashboard')"><span class="nav-icon">◈</span> Dashboard</div>
+      <div class="nav-item" onclick="showView('tracker')"><span class="nav-icon">≡</span> Monthly Tracker</div>
+      <div class="nav-item" onclick="showView('log')"><span class="nav-icon">◎</span> Visit Log</div>
+      <div class="nav-sec">Sales</div>
+      <div class="nav-item" onclick="showView('sales')"><span class="nav-icon">▲</span> Sales Data</div>
+      <div class="nav-item" onclick="showView('import')"><span class="nav-icon">↑</span> Import File</div>
+      <div class="nav-sec">Extras</div>
+      <div class="nav-item" onclick="showView('training')"><span class="nav-icon">▣</span> Training</div>
+      <div class="nav-item" onclick="showView('surveys')"><span class="nav-icon">◷</span> Surveys</div>
+      <div class="nav-item" onclick="showView('stores')"><span class="nav-icon">◉</span> Store List</div>
+    </nav>
+    <div class="month-chip">
+      <div class="month-label">Current Period</div>
+      <div class="month-value" id="currentMonth">—</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title" id="topbarTitle">KPI Dashboard</div>
+      <div class="action-row">
+        <input class="search-input" type="text" placeholder="Search stores…" id="globalSearch" oninput="handleSearch(this.value)">
+        <button class="btn btn-primary" onclick="openLogModal()">+ Log Visit</button>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="view active" id="view-dashboard">
+        <div id="resetBanner"></div>
+        <div class="kpi-grid">
+          <div class="kpi-card green"><div class="kpi-label">Compliant</div><div class="kpi-value" id="kpiCompliant">0</div><div class="kpi-sub">stores on target</div></div>
+          <div class="kpi-card amber"><div class="kpi-label">Under Visited</div><div class="kpi-value" id="kpiUnder">0</div><div class="kpi-sub">visits behind</div></div>
+          <div class="kpi-card red"><div class="kpi-label">No Visits</div><div class="kpi-value" id="kpiNone">0</div><div class="kpi-sub">not started</div></div>
+          <div class="kpi-card blue"><div class="kpi-label">Total Visits</div><div class="kpi-value" id="kpiTotal">0</div><div class="kpi-sub" id="kpiTotalSub">this month</div></div>
+        </div>
+        <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="kpi-card purple"><div class="kpi-label">W14 Units Sold</div><div class="kpi-value" id="kpiW14Units">280</div><div class="kpi-sub">latest week</div></div>
+          <div class="kpi-card purple"><div class="kpi-label">W14 Target</div><div class="kpi-value" id="kpiW14Tgt">190</div><div class="kpi-sub">weighted target</div></div>
+          <div class="kpi-card purple"><div class="kpi-label">vs Target</div><div class="kpi-value" id="kpiW14Pct">147%</div><div class="kpi-sub">W14 attainment</div></div>
+        </div>
+        <div class="charts-row">
+          <div class="chart-card"><div class="chart-title">Call File Compliance</div><canvas id="chartCompliance" height="180"></canvas></div>
+          <div class="chart-card"><div class="chart-title">Survey Progress</div><canvas id="chartSurvey" height="180"></canvas></div>
+          <div class="chart-card"><div class="chart-title">Weekly Units vs Target</div><canvas id="chartWeekly" height="180"></canvas></div>
+        </div>
+        <div class="section-head"><div class="section-title">Network Breakdown</div></div>
+        <div class="network-grid" id="networkGrid"></div>
+      </div>
+
+      <!-- TRACKER -->
+      <div class="view" id="view-tracker">
+        <div class="section-head"><div class="section-title">Monthly Tracker</div></div>
+        <div class="table-card">
+          <div class="filter-row" id="trackerFilters">
+            <span class="filter-chip active" onclick="setFilter('ALL',this)">All</span>
+            <span class="filter-chip" onclick="setFilter('Compliant',this)">✅ Compliant</span>
+            <span class="filter-chip" onclick="setFilter('Under Visited',this)">⚠️ Under</span>
+            <span class="filter-chip" onclick="setFilter('No Visits Logged',this)">🔴 No Visits</span>
+            <span class="filter-chip" onclick="setFilter('O2',this)">O2</span>
+            <span class="filter-chip" onclick="setFilter('EE',this)">EE</span>
+            <span class="filter-chip" onclick="setFilter('Tesco',this)">Tesco</span>
+            <span class="filter-chip" onclick="setFilter('Currys',this)">Currys</span>
+            <span class="filter-chip" onclick="setFilter('Vodafone',this)">Vodafone</span>
+            <span class="filter-chip" onclick="setFilter('H3G',this)">H3G</span>
+          </div>
+          <table>
+            <thead><tr><th>Store</th><th>Network</th><th>Required</th><th>Done</th><th>Remaining</th><th>Progress</th><th>Status</th><th>Surveys</th><th>W14 Units</th></tr></thead>
+            <tbody id="trackerBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- VISIT LOG -->
+      <div class="view" id="view-log">
+        <div class="section-head"><div class="section-title">Visit Log</div><button class="btn btn-primary" onclick="openLogModal()">+ Log Visit</button></div>
+        <div id="visitLogList"></div>
+      </div>
+
+      <!-- SALES -->
+      <div class="view" id="view-sales">
+        <div class="section-head">
+          <div class="section-title">Sales Data</div>
+          <div class="action-row">
+            <select id="weekSelect" onchange="renderSales()" style="width:120px">
+              <option value="202614">W14 (Latest)</option>
+            </select>
+            <button class="btn btn-ghost" onclick="showView('import')">↑ Import New Week</button>
+          </div>
+        </div>
+        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)" id="salesKpis"></div>
+        <div class="charts-row" style="grid-template-columns:1fr 1fr">
+          <div class="chart-card"><div class="chart-title">Units by Network</div><canvas id="chartSalesNet" height="200"></canvas></div>
+          <div class="chart-card"><div class="chart-title">Product Mix</div><canvas id="chartSalesMix" height="200"></canvas></div>
+        </div>
+        <div class="table-card">
+          <div class="table-header"><span class="table-header-title">Store League Table</span></div>
+          <table>
+            <thead><tr><th>Store</th><th>Network</th><th>Units</th><th>Target</th><th>Attainment</th><th>vs Target</th><th>Product Mix</th></tr></thead>
+            <tbody id="salesBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- IMPORT -->
+      <div class="view" id="view-import">
+        <div class="section-head"><div class="section-title">Import Sales File</div></div>
+        <div class="import-zone" onclick="document.getElementById('fileInput').click()">
+          <input type="file" id="fileInput" accept=".xlsb,.xlsx,.csv" onchange="handleFileImport(this)">
+          <div class="import-icon">📂</div>
+          <div class="import-title">Drop your weekly FT Sales Report here</div>
+          <div class="import-sub">Supports .xlsb, .xlsx — filters Terr14 automatically</div>
+        </div>
+        <div id="importStatus"></div>
+        <div class="divider"></div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:18px 20px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px">How importing works</div>
+          <div style="font-size:13px;color:var(--text-dim);line-height:1.7">
+            1. Download your weekly FT Sales Report as received (the .xlsb file).<br>
+            2. Click the upload area above and select the file.<br>
+            3. VisitPro reads the <em>Sales and Target Data</em> sheet, filters to Terr14, matches your 44 stores, and updates the Sales tab.<br>
+            4. Previous weeks are retained — you can switch between weeks using the dropdown on the Sales tab.<br>
+            <br>
+            <strong style="color:var(--amber)">Note:</strong> Because .xlsb is a binary format that can't be read directly in the browser, you can also export the <em>Sales and Target Data</em> sheet to .xlsx or .csv and upload that instead.
+          </div>
+        </div>
+      </div>
+
+      <!-- TRAINING -->
+      <div class="view" id="view-training">
+        <div class="section-head"><div class="section-title">Training Completions</div><button class="btn btn-primary" onclick="openTrainingModal()">+ Log Training</button></div>
+        <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="kpi-card blue"><div class="kpi-label">Total Trained</div><div class="kpi-value" id="trainingTotal">0</div><div class="kpi-sub">staff this month</div></div>
+          <div class="kpi-card green"><div class="kpi-label">Stores Covered</div><div class="kpi-value" id="trainingStores">0</div><div class="kpi-sub">with training logged</div></div>
+          <div class="kpi-card amber"><div class="kpi-label">Avg per Store</div><div class="kpi-value" id="trainingAvg">0</div><div class="kpi-sub">staff trained</div></div>
+        </div>
+        <div class="table-card" style="margin-top:20px">
+          <div class="table-header"><span class="table-header-title">Training Log</span></div>
+          <table><thead><tr><th>Store</th><th>Date</th><th>Staff Count</th><th>Topic</th><th>Notes</th></tr></thead><tbody id="trainingBody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- SURVEYS -->
+      <div class="view" id="view-surveys">
+        <div class="section-head"><div class="section-title">Survey Tracker</div></div>
+        <div class="table-card">
+          <table><thead><tr><th>Store</th><th>Network</th><th>Surveys Done</th><th>Status</th></tr></thead><tbody id="surveysBody"></tbody></table>
+        </div>
+      </div>
+
+      <!-- STORES -->
+      <div class="view" id="view-stores">
+        <div class="section-head"><div class="section-title">Store Directory</div></div>
+        <div class="table-card">
+          <table><thead><tr><th>Store ID</th><th>Name</th><th>Network</th><th>Monthly Target</th></tr></thead><tbody id="storesBody"></tbody></table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- LOG VISIT MODAL -->
+<div class="modal-backdrop" id="logModal">
+  <div class="modal">
+    <div class="modal-head"><h2>Log Store Visit</h2><button class="modal-close" onclick="closeModal('logModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Store Name</label><select id="fStore"><option value="">Select store…</option></select></div>
+        <div class="form-group"><label>Date</label><input type="date" id="fDate"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Survey Completed?</label><div class="toggle-row"><button class="toggle-btn" id="tSurveyN" onclick="setToggle('survey','N')">N</button><button class="toggle-btn" id="tSurveyY" onclick="setToggle('survey','Y')">Y</button></div></div>
+        <div class="form-group"><label>Photos Taken?</label><div class="toggle-row"><button class="toggle-btn" id="tPhotoN" onclick="setToggle('photo','N')">N</button><button class="toggle-btn" id="tPhotoY" onclick="setToggle('photo','Y')">Y</button></div></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Compliance Checked?</label><div class="toggle-row"><button class="toggle-btn" id="tCompN" onclick="setToggle('comp','N')">N</button><button class="toggle-btn" id="tCompY" onclick="setToggle('comp','Y')">Y</button></div></div>
+        <div class="form-group"><label>Staff Trained (#)</label><input type="number" id="fStaffTrained" min="0" value="0"></div>
+      </div>
+      <div class="form-group"><label>Key Personnel Met</label><input type="text" id="fPersonnel" placeholder="e.g. Manager, FSC names…"></div>
+      <div class="form-group"><label>Visit Notes / Summary</label><textarea id="fNotes" placeholder="What was covered, any issues, actions…"></textarea></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal('logModal')">Cancel</button><button class="btn btn-primary" onclick="saveVisit()">Save Visit</button></div>
+  </div>
+</div>
+
+<!-- TRAINING MODAL -->
+<div class="modal-backdrop" id="trainingModal">
+  <div class="modal">
+    <div class="modal-head"><h2>Log Training</h2><button class="modal-close" onclick="closeModal('trainingModal')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Store</label><select id="tStore"><option value="">Select store…</option></select></div>
+        <div class="form-group"><label>Date</label><input type="date" id="tDate"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Staff Count</label><input type="number" id="tCount" min="1" value="1"></div>
+        <div class="form-group"><label>Training Topic</label><input type="text" id="tTopic" placeholder="e.g. Galaxy S25, A37…"></div>
+      </div>
+      <div class="form-group"><label>Notes</label><textarea id="tNotes" placeholder="Details, staff names, outcomes…"></textarea></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal('trainingModal')">Cancel</button><button class="btn btn-primary" onclick="saveTraining()">Save</button></div>
+  </div>
+</div>
+
+<script>
+// ─── STORE DATA ───────────────────────────────────────────────────────────────
+const STORES=[
+  {id:'522',name:'Antrim Junction One',network:'O2',target:2},
+  {id:'2195',name:'Antrim Massrne Extra',network:'Tesco',target:1},
+  {id:'571',name:'Armagh',network:'O2',target:2},
+  {id:'2323',name:'Ballymena',network:'Currys',target:1},
+  {id:'R130',name:'Ballymena',network:'EE',target:1},
+  {id:'203',name:'Ballymena',network:'O2',target:2},
+  {id:'5335',name:'Ballymena',network:'Tesco',target:2},
+  {id:'60366',name:'Ballymena',network:'Vodafone',target:2},
+  {id:'2281',name:'Ballymoney Castle St',network:'Tesco',target:1},
+  {id:'5137',name:'Carrickfergs Cstl Ext',network:'Tesco',target:2},
+  {id:'2295',name:'Coleraine',network:'Currys',target:1},
+  {id:'4238',name:'Coleraine',network:'EE',target:1},
+  {id:'213',name:'Coleraine',network:'O2',target:2},
+  {id:'2294',name:'Coleraine',network:'Tesco',target:1},
+  {id:'60892',name:'Coleraine (Vodafone N.I)',network:'Vodafone',target:1},
+  {id:'1443',name:'Coleraine',network:'H3G',target:2},
+  {id:'4321',name:'Cookstown',network:'EE',target:1},
+  {id:'556',name:'Cookstown',network:'O2',target:2},
+  {id:'3491',name:'Cookstown Broadfield',network:'Tesco',target:2},
+  {id:'2406',name:'Dungannon',network:'Tesco',target:2},
+  {id:'2398',name:'Enniskillen',network:'Currys',target:1},
+  {id:'555',name:'Enniskillen',network:'O2',target:2},
+  {id:'5333',name:'Enniskillen',network:'Tesco',target:1},
+  {id:'60293',name:'Enniskillen Erneside',network:'Vodafone',target:1},
+  {id:'560',name:'Limavady',network:'O2',target:2},
+  {id:'2838',name:'Lisnagelvin',network:'Tesco',target:1},
+  {id:'2413',name:'Londonderry',network:'Currys',target:2},
+  {id:'R144',name:'Londonderry',network:'EE',target:1},
+  {id:'229',name:'Londonderry - Foyleside',network:'O2',target:2},
+  {id:'1613',name:'Londonderry',network:'H3G',target:1},
+  {id:'60819',name:'Londonderry (Vodafone N.I)',network:'Vodafone',target:1},
+  {id:'554',name:'Magherafelt',network:'O2',target:2},
+  {id:'70197',name:'Magherafelt',network:'Vodafone',target:1},
+  {id:'2345',name:'Newry',network:'Currys',target:2},
+  {id:'R270',name:'Newry',network:'EE',target:1},
+  {id:'1375',name:'Newry',network:'H3G',target:2},
+  {id:'230',name:'Newry',network:'O2',target:1},
+  {id:'60051',name:'Newry',network:'Vodafone',target:2},
+  {id:'4220',name:'Omagh',network:'EE',target:1},
+  {id:'262',name:'Omagh',network:'O2',target:2},
+  {id:'60459',name:'Omagh',network:'Vodafone',target:1},
+  {id:'559',name:'Strabane',network:'O2',target:2},
+];
+
+// ─── EMBEDDED SALES DATA (W1-W14 from the uploaded report) ───────────────────
+const SALES_DB = {"1375":{"202601":{"Computer_Premium":{"u":0.0,"t":0.02},"Smartphone_High":{"u":1.0,"t":0.21},"Smartphone_Low":{"u":4.0,"t":0.68},"Smartphone_Premium":{"u":1.0,"t":0.8},"Tablet_Low":{"u":0.0,"t":0.16},"Tablet_Premium":{"u":0.0,"t":0.02}},"202602":{"Computer_Premium":{"u":0.0,"t":0.02},"Smartphone_High":{"u":0.0,"t":0.27},"Smartphone_Low":{"u":2.0,"t":0.98},"Smartphone_Premium":{"u":0.0,"t":0.83},"Tablet_Low":{"u":0.0,"t":0.22},"Tablet_Premium":{"u":0.0,"t":0.02}},"202603":{"Computer_Premium":{"u":0.0,"t":0.01},"Smartphone_High":{"u":1.0,"t":0.72},"Smartphone_Low":{"u":1.0,"t":1.04},"Smartphone_Premium":{"u":0.0,"t":0.69},"Tablet_Low":{"u":0.0,"t":0.08},"Tablet_Premium":{"u":0.0,"t":0.02}},"202604":{"Computer_Premium":{"u":0.0,"t":0.02},"Smartphone_High":{"u":0.0,"t":0.6},"Smartphone_Low":{"u":2.0,"t":1.18},"Smartphone_Premium":{"u":2.0,"t":0.58},"Tablet_Low":{"u":0.0,"t":0.09},"Tablet_Premium":{"u":0.0,"t":0.01}},"202605":{"Smartphone_Low":{"u":0.0,"t":1.41},"Smartphone_Premium":{"u":0.0,"t":0.93}},"202606":{"Smartphone_Low":{"u":0.0,"t":1.37},"Smartphone_Premium":{"u":0.0,"t":0.66}},"202607":{"Smartphone_High":{"u":1.0,"t":0.36},"Smartphone_Low":{"u":0.0,"t":1.15},"Smartphone_Premium":{"u":1.0,"t":0.56}},"202608":{"Smartphone_High":{"u":1.0,"t":0.26},"Smartphone_Low":{"u":1.0,"t":1.01},"Smartphone_Premium":{"u":0.0,"t":0.43}},"202609":{"Smartphone_High":{"u":1.0,"t":0.26},"Smartphone_Low":{"u":1.0,"t":0.73},"Smartphone_Premium":{"u":0.0,"t":1.22}},"202610":{"Smartphone_High":{"u":1.0,"t":0.16},"Smartphone_Low":{"u":1.0,"t":0.54},"Smartphone_Premium":{"u":0.0,"t":2.33}},"202611":{"Smartphone_High":{"u":0.0,"t":0.14},"Smartphone_Low":{"u":1.0,"t":0.46},"Smartphone_Premium":{"u":2.0,"t":0.7}},"202612":{"Smartphone_High":{"u":2.0,"t":0.17},"Smartphone_Low":{"u":1.0,"t":0.43},"Smartphone_Premium":{"u":0.0,"t":0.97}},"202613":{"Smartphone_High":{"u":0.0,"t":0.19},"Smartphone_Low":{"u":1.0,"t":0.57},"Smartphone_Premium":{"u":1.0,"t":0.54}},"202614":{"Smartphone_Low":{"u":1.0,"t":0.66},"Smartphone_Premium":{"u":2.0,"t":0.34}}},"203":{"202601":{"Smartphone_High":{"u":9.0,"t":5.19},"Smartphone_Low":{"u":7.0,"t":5.7},"Smartphone_Premium":{"u":7.0,"t":9.34},"Tablet_Low":{"u":12.0,"t":8.94}},"202602":{"Smartphone_High":{"u":3.0,"t":4.17},"Smartphone_Low":{"u":7.0,"t":5.65},"Smartphone_Premium":{"u":6.0,"t":7.1},"Tablet_Low":{"u":3.0,"t":4.9}},"202603":{"Smartphone_Low":{"u":4.0,"t":8.6},"Smartphone_Premium":{"u":10.0,"t":8.85},"Tablet_Low":{"u":4.0,"t":2.43}},"202604":{"Smartphone_High":{"u":2.0,"t":0.57},"Smartphone_Low":{"u":11.0,"t":8.99},"Smartphone_Premium":{"u":8.0,"t":7.97},"Tablet_Low":{"u":4.0,"t":2.14}},"202605":{"Smartphone_High":{"u":1.0,"t":0.61},"Smartphone_Low":{"u":2.0,"t":14.81},"Smartphone_Premium":{"u":15.0,"t":8.22},"Tablet_Low":{"u":5.0,"t":2.29}},"202606":{"Smartphone_High":{"u":0.0,"t":1.43},"Smartphone_Low":{"u":12.0,"t":14.3},"Smartphone_Premium":{"u":11.0,"t":5.8},"Tablet_Low":{"u":2.0,"t":2.4}},"202607":{"Smartphone_High":{"u":2.0,"t":2.69},"Smartphone_Low":{"u":17.0,"t":15.65},"Smartphone_Premium":{"u":6.0,"t":5.28},"Tablet_Low":{"u":4.0,"t":2.63}},"202608":{"Smartphone_High":{"u":4.0,"t":2.91},"Smartphone_Low":{"u":9.0,"t":12.29},"Smartphone_Premium":{"u":3.0,"t":2.02},"Tablet_Low":{"u":1.0,"t":2.85}},"202609":{"Smartphone_High":{"u":3.0,"t":2.08},"Smartphone_Low":{"u":10.0,"t":19.33},"Smartphone_Premium":{"u":9.0,"t":1.52},"Tablet_Low":{"u":2.0,"t":2.49}},"202610":{"Smartphone_High":{"u":1.0,"t":1.85},"Smartphone_Low":{"u":17.0,"t":6.94},"Smartphone_Premium":{"u":15.0,"t":23.56},"Tablet_Low":{"u":7.0,"t":1.46}},"202611":{"Smartphone_High":{"u":1.0,"t":1.52},"Smartphone_Low":{"u":12.0,"t":8.22},"Smartphone_Premium":{"u":9.0,"t":19.04},"Tablet_Low":{"u":1.0,"t":1.52}},"202612":{"Smartphone_High":{"u":0.0,"t":0.86},"Smartphone_Low":{"u":9.0,"t":7.28},"Smartphone_Premium":{"u":14.0,"t":9.16},"Tablet_Low":{"u":9.0,"t":3.86}},"202613":{"Smartphone_High":{"u":0.0,"t":0.54},"Smartphone_Low":{"u":6.0,"t":25.34},"Smartphone_Premium":{"u":13.0,"t":9.53},"Tablet_Low":{"u":5.0,"t":3.98}},"202614":{"Smartphone_Low":{"u":9.0,"t":6.87},"Smartphone_Premium":{"u":6.0,"t":8.36},"Tablet_Low":{"u":7.0,"t":3.62}}},"213":{"202601":{"Smartphone_High":{"u":4.0,"t":2.91},"Smartphone_Low":{"u":8.0,"t":3.2},"Smartphone_Premium":{"u":4.0,"t":6.08},"Tablet_Low":{"u":1.0,"t":5.02}},"202614":{"Smartphone_Low":{"u":6.0,"t":5.11},"Smartphone_Premium":{"u":8.0,"t":5.11},"Tablet_Low":{"u":2.0,"t":2.69}}},"229":{"202601":{"Smartphone_High":{"u":19.0,"t":7.37},"Smartphone_Low":{"u":8.0,"t":8.1},"Smartphone_Premium":{"u":8.0,"t":11.39},"Tablet_Low":{"u":13.0,"t":12.69}},"202614":{"Smartphone_Low":{"u":13.0,"t":7.73},"Smartphone_Premium":{"u":12.0,"t":8.95},"Tablet_Low":{"u":16.0,"t":4.07}}},"230":{"202601":{"Smartphone_High":{"u":2.0,"t":2.39},"Smartphone_Low":{"u":8.0,"t":2.63},"Smartphone_Premium":{"u":2.0,"t":4.8},"Tablet_Low":{"u":2.0,"t":4.12}},"202614":{"Smartphone_Low":{"u":7.0,"t":4.25},"Smartphone_Premium":{"u":11.0,"t":4.33},"Tablet_Low":{"u":5.0,"t":2.24},"Tablet_Premium":{"u":1.0,"t":0.18}}},"262":{"202601":{"Smartphone_High":{"u":2.0,"t":2.89},"Smartphone_Low":{"u":12.0,"t":3.18},"Smartphone_Premium":{"u":2.0,"t":3.26},"Tablet_Low":{"u":2.0,"t":4.98}},"202614":{"Smartphone_High":{"u":1.0,"t":0.15},"Smartphone_Low":{"u":8.0,"t":3.98},"Smartphone_Premium":{"u":1.0,"t":4.52},"Tablet_Low":{"u":5.0,"t":2.1}}},"2195":{"202614":{"Smartphone_Low":{"u":0.0,"t":1.15}}},"2281":{"202614":{"Smartphone_Low":{"u":1.0,"t":1.15}}},"2294":{"202614":{"Smartphone_Low":{"u":0.0,"t":0.57}}},"2295":{"202614":{"Computer_Premium":{"u":2.0,"t":0.57},"Tablet_Low":{"u":1.0,"t":1.28},"Tablet_Premium":{"u":1.0,"t":0.56}}},"2323":{"202614":{"Computer_Premium":{"u":1.0,"t":0.23},"Tablet_Low":{"u":1.0,"t":1.45}}},"2345":{"202614":{"Computer_Premium":{"u":0.0,"t":0.23},"Tablet_Low":{"u":6.0,"t":2.22},"Tablet_Premium":{"u":1.0,"t":0.22}}},"2398":{"202614":{"Computer_Premium":{"u":7.0,"t":0.68},"Tablet_Low":{"u":0.0,"t":1.36}}},"2406":{"202614":{"Smartphone_Low":{"u":0.0,"t":1.72}}},"2413":{"202614":{"Computer_Premium":{"u":2.0,"t":1.02},"Tablet_Low":{"u":7.0,"t":4.86}}},"2838":{"202614":{"Smartphone_Low":{"u":0.0,"t":3.44}}},"3491":{"202614":{"Smartphone_Low":{"u":0.0,"t":1.15}}},"4220":{"202614":{"Smartphone_Low":{"u":1.0,"t":1.68}}},"4238":{"202614":{"Smartphone_Low":{"u":4.0,"t":1.85},"Smartphone_Premium":{"u":1.0,"t":0.34},"Tablet_Low":{"u":1.0,"t":0.82}}},"4321":{"202614":{"Smartphone_Low":{"u":0.0,"t":0.34}}},"522":{"202601":{"Smartphone_High":{"u":3.0,"t":1.82},"Smartphone_Low":{"u":6.0,"t":2.0},"Smartphone_Premium":{"u":4.0,"t":5.74},"Tablet_Low":{"u":0.0,"t":3.14}},"202614":{"Smartphone_Low":{"u":2.0,"t":3.03},"Smartphone_Premium":{"u":7.0,"t":3.64},"Tablet_Low":{"u":0.0,"t":1.6}}},"5137":{"202614":{"Smartphone_Low":{"u":0.0,"t":1.72}}},"5333":{"202614":{"Smartphone_Low":{"u":2.0,"t":1.72}}},"5335":{"202614":{"Smartphone_Low":{"u":1.0,"t":1.15}}},"554":{"202601":{"Smartphone_High":{"u":4.0,"t":2.75},"Smartphone_Low":{"u":3.0,"t":3.02},"Smartphone_Premium":{"u":2.0,"t":4.71},"Tablet_Low":{"u":2.0,"t":4.73}},"202614":{"Smartphone_Low":{"u":12.0,"t":2.49},"Smartphone_Premium":{"u":9.0,"t":4.72},"Tablet_Low":{"u":5.0,"t":1.31}}},"555":{"202601":{"Smartphone_High":{"u":5.0,"t":2.25},"Smartphone_Low":{"u":2.0,"t":2.47},"Smartphone_Premium":{"u":8.0,"t":2.31},"Tablet_Low":{"u":5.0,"t":3.88}},"202614":{"Smartphone_Low":{"u":4.0,"t":3.3},"Smartphone_Premium":{"u":6.0,"t":3.05},"Tablet_Low":{"u":5.0,"t":1.74}}},"556":{"202601":{"Smartphone_High":{"u":2.0,"t":1.45},"Smartphone_Low":{"u":3.0,"t":1.59},"Smartphone_Premium":{"u":4.0,"t":3.6},"Tablet_Low":{"u":4.0,"t":2.49}},"202614":{"Smartphone_Low":{"u":3.0,"t":1.85},"Smartphone_Premium":{"u":3.0,"t":2.95},"Tablet_Low":{"u":2.0,"t":0.98}}},"559":{"202601":{"Smartphone_High":{"u":1.0,"t":1.75},"Smartphone_Low":{"u":2.0,"t":1.93},"Smartphone_Premium":{"u":2.0,"t":1.46},"Tablet_Low":{"u":3.0,"t":3.02}},"202614":{"Smartphone_High":{"u":1.0,"t":0.1},"Smartphone_Low":{"u":6.0,"t":2.67},"Smartphone_Premium":{"u":6.0,"t":2.26},"Tablet_Low":{"u":9.0,"t":1.41}}},"560":{"202601":{"Smartphone_High":{"u":0.0,"t":1.56},"Smartphone_Low":{"u":5.0,"t":1.72},"Smartphone_Premium":{"u":3.0,"t":2.06},"Tablet_Low":{"u":4.0,"t":2.69}},"202614":{"Smartphone_Low":{"u":2.0,"t":2.21},"Smartphone_Premium":{"u":2.0,"t":2.36}}},"571":{"202601":{"Smartphone_High":{"u":0.0,"t":2.06},"Smartphone_Low":{"u":2.0,"t":2.26},"Smartphone_Premium":{"u":8.0,"t":2.57},"Tablet_Low":{"u":7.0,"t":3.55}},"202614":{"Smartphone_Low":{"u":4.0,"t":1.22},"Smartphone_Premium":{"u":3.0,"t":1.97}}},"R130":{"202601":{"Smartphone_High":{"u":1.0,"t":0.55},"Smartphone_Low":{"u":4.0,"t":3.85},"Smartphone_Premium":{"u":0.0,"t":2.8},"Tablet_Low":{"u":0.0,"t":0.81}},"202614":{"Smartphone_Low":{"u":8.0,"t":4.54},"Smartphone_Premium":{"u":2.0,"t":1.34},"Tablet_Low":{"u":2.0,"t":2.01}}},"R144":{"202601":{"Smartphone_High":{"u":0.0,"t":0.47},"Smartphone_Low":{"u":3.0,"t":3.33},"Smartphone_Premium":{"u":0.0,"t":1.7},"Tablet_Low":{"u":2.0,"t":0.7}},"202614":{"Smartphone_Low":{"u":3.0,"t":3.61},"Smartphone_Premium":{"u":2.0,"t":0.67},"Tablet_Low":{"u":0.0,"t":1.6}}},"R270":{"202601":{"Smartphone_High":{"u":0.0,"t":0.2},"Smartphone_Low":{"u":0.0,"t":1.44},"Smartphone_Premium":{"u":6.0,"t":0.9},"Tablet_Low":{"u":1.0,"t":0.3}},"202614":{"Smartphone_Low":{"u":5.0,"t":1.76},"Tablet_Low":{"u":1.0,"t":0.78}}},"1443":{"202614":{"Smartphone_Low":{"u":1.0,"t":0.61},"Smartphone_Premium":{"u":1.0,"t":0.11}}},"1613":{"202614":{"Smartphone_Premium":{"u":3.0,"t":0.23}}}};
+
+const WEEKLY_TOTALS={"202601":{"u":283,"t":265},"202602":{"u":229,"t":211},"202603":{"u":195,"t":209},"202604":{"u":242,"t":207},"202605":{"u":227,"t":254},"202606":{"u":196,"t":227},"202607":{"u":198,"t":250},"202608":{"u":189,"t":197},"202609":{"u":208,"t":272},"202610":{"u":252,"t":353},"202611":{"u":221,"t":287},"202612":{"u":250,"t":218},"202613":{"u":259,"t":338},"202614":{"u":280,"t":190}};
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let visits=JSON.parse(localStorage.getItem('svt_visits')||'[]');
+let training=JSON.parse(localStorage.getItem('svt_training')||'[]');
+let toggleState={survey:'N',photo:'N',comp:'N'};
+let activeFilter='ALL';
+let currentView='dashboard';
+let salesDb=JSON.parse(localStorage.getItem('svt_sales')||'null')||SALES_DB;
+let weeklyTotals=JSON.parse(localStorage.getItem('svt_weekly')||'null')||WEEKLY_TOTALS;
+
+function save(){localStorage.setItem('svt_visits',JSON.stringify(visits));localStorage.setItem('svt_training',JSON.stringify(training));}
+
+// ─── MONTHLY RESET ────────────────────────────────────────────────────────────
+function checkMonthlyReset(){
+  const now=new Date();
+  const mk=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const lastMk=localStorage.getItem('svt_month');
+  if(lastMk && lastMk!==mk){
+    // Archive old month
+    const archive=JSON.parse(localStorage.getItem('svt_archive')||'{}');
+    archive[lastMk]=visits.filter(v=>v.date&&v.date.startsWith(lastMk));
+    localStorage.setItem('svt_archive',JSON.stringify(archive));
+    // Reset visits to only non-month visits (keep future dated if any)
+    visits=visits.filter(v=>!v.date||!v.date.startsWith(lastMk));
+    save();
+    showResetBanner(lastMk);
+  }
+  localStorage.setItem('svt_month',mk);
+}
+
+function showResetBanner(lastMk){
+  const b=document.getElementById('resetBanner');
+  if(b)b.innerHTML=`<div class="reset-banner"><span class="reset-banner-text">🔄 New month! Your ${lastMk} visits have been archived and the tracker has reset for the new period.</span><button class="btn btn-ghost" onclick="this.parentElement.parentElement.innerHTML=''">Dismiss</button></div>`;
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function currentMonthKey(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}
+function monthLabel(){return new Date().toLocaleDateString('en-GB',{month:'long',year:'numeric'});}
+function thisMonthVisits(){const mk=currentMonthKey();return visits.filter(v=>v.date&&v.date.startsWith(mk));}
+function visitsForStore(id){const mk=currentMonthKey();return visits.filter(v=>v.storeId===id&&v.date&&v.date.startsWith(mk));}
+function complianceStatus(s){const d=visitsForStore(s.id).length;if(d===0)return 'No Visits Logged';if(d>=s.target)return 'Compliant';return 'Under Visited';}
+function badgeFor(st){if(st==='Compliant')return '<span class="badge badge-green">✅ Compliant</span>';if(st==='Under Visited')return '<span class="badge badge-amber">⚠️ Under Visited</span>';return '<span class="badge badge-red">🔴 No Visits</span>';}
+function networkPill(n){return `<span class="network-pill pill-${n}">${n}</span>`;}
+
+function storeWeekUnits(storeId,week){
+  const wk=String(week);
+  const d=salesDb[storeId]?.[wk];
+  if(!d)return 0;
+  return Object.values(d).reduce((a,v)=>a+v.u,0);
+}
+function storeWeekTarget(storeId,week){
+  const wk=String(week);
+  const d=salesDb[storeId]?.[wk];
+  if(!d)return 0;
+  return Object.values(d).reduce((a,v)=>a+v.t,0);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+function init(){
+  checkMonthlyReset();
+  document.getElementById('currentMonth').textContent=monthLabel();
+  populateStoreDropdowns();
+  populateWeekSelect();
+  document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('tDate').value=new Date().toISOString().split('T')[0];
+  renderAll();
+}
+
+function populateStoreDropdowns(){
+  const opts=STORES.map(s=>`<option value="${s.id}">${s.name} — ${s.network} (${s.id})</option>`).join('');
+  document.getElementById('fStore').innerHTML='<option value="">Select store…</option>'+opts;
+  document.getElementById('tStore').innerHTML='<option value="">Select store…</option>'+opts;
+}
+
+function populateWeekSelect(){
+  const sel=document.getElementById('weekSelect');
+  const weeks=Object.keys(weeklyTotals).sort((a,b)=>b-a);
+  sel.innerHTML=weeks.map(w=>{
+    const wn=w.slice(4);
+    return `<option value="${w}">W${wn}${w==='202614'?' (Latest)':''}</option>`;
+  }).join('');
+}
+
+function renderAll(){
+  renderDashboard();renderTracker();renderVisitLog();renderTraining();renderSurveys();renderStores();renderSales();
+}
+
+// ─── DASHBOARD ─────────────────────────────────────────────────────────────────
+function renderDashboard(){
+  const mv=thisMonthVisits();
+  let compliant=0,under=0,none=0;
+  STORES.forEach(s=>{const st=complianceStatus(s);if(st==='Compliant')compliant++;else if(st==='Under Visited')under++;else none++;});
+  document.getElementById('kpiCompliant').textContent=compliant;
+  document.getElementById('kpiUnder').textContent=under;
+  document.getElementById('kpiNone').textContent=none;
+  document.getElementById('kpiTotal').textContent=mv.length;
+  document.getElementById('kpiTotalSub').textContent=`of ${STORES.reduce((a,s)=>a+s.target,0)} required`;
+
+  const w14=weeklyTotals['202614']||{u:0,t:0};
+  document.getElementById('kpiW14Units').textContent=w14.u;
+  document.getElementById('kpiW14Tgt').textContent=Math.round(w14.t);
+  document.getElementById('kpiW14Pct').textContent=w14.t>0?Math.round((w14.u/w14.t)*100)+'%':'—';
+
+  const surveyDone=STORES.filter(s=>visitsForStore(s.id).some(v=>v.survey==='Y')).length;
+  drawDonut('chartCompliance',[compliant,under,none],['#00c853','#ffab00','#ff3d57'],['Compliant','Under','None']);
+  drawDonut('chartSurvey',[surveyDone,STORES.length-surveyDone],['#00c853','#ff3d57'],['Done','Pending']);
+  drawWeeklyBar();
+  renderNetworkGrid();
+}
+
+function drawWeeklyBar(){
+  const canvas=document.getElementById('chartWeekly');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.offsetWidth||300;canvas.width=W;canvas.height=180;
+  ctx.clearRect(0,0,W,180);
+  const weeks=Object.keys(weeklyTotals).sort().slice(-8);
+  const maxVal=Math.max(...weeks.map(w=>Math.max(weeklyTotals[w].u,weeklyTotals[w].t)),1);
+  const bw=(W-40)/weeks.length-4;
+  weeks.forEach((wk,i)=>{
+    const x=20+i*((W-40)/weeks.length);
+    const d=weeklyTotals[wk];
+    const tH=(d.t/maxVal)*120;const uH=(d.u/maxVal)*120;
+    // target line
+    ctx.fillStyle='rgba(168,85,247,0.2)';
+    ctx.fillRect(x,135-tH,bw,tH);
+    // units bar
+    ctx.fillStyle=d.u>=d.t?'#00c853':'#1f3ef5';
+    ctx.fillRect(x+2,135-uH,bw-4,uH);
+    ctx.fillStyle='#7070a0';ctx.font='9px DM Mono';ctx.textAlign='center';
+    ctx.fillText('W'+wk.slice(4),x+bw/2,150);
+  });
+  ctx.textAlign='left';
+}
+
+function drawDonut(canvasId,data,colors,labels){
+  const canvas=document.getElementById(canvasId);
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.offsetWidth||220;canvas.width=W;canvas.height=180;
+  const cx=W/2,cy=80,r=65,inner=38;
+  const total=data.reduce((a,b)=>a+b,0);
+  let angle=-Math.PI/2;
+  ctx.clearRect(0,0,W,180);
+  if(!total){ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle='#1c1c27';ctx.fill();ctx.beginPath();ctx.arc(cx,cy,inner,0,Math.PI*2);ctx.fillStyle='#0a0a0f';ctx.fill();return;}
+  data.forEach((v,i)=>{const sl=(v/total)*Math.PI*2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,angle,angle+sl);ctx.closePath();ctx.fillStyle=colors[i];ctx.fill();angle+=sl;});
+  ctx.beginPath();ctx.arc(cx,cy,inner,0,Math.PI*2);ctx.fillStyle='#0a0a0f';ctx.fill();
+  ctx.font='11px DM Sans';
+  labels.forEach((l,i)=>{const lx=(W/labels.length)*i+16;ctx.fillStyle=colors[i];ctx.fillRect(lx,155,10,10);ctx.fillStyle='#7070a0';ctx.fillText(`${l} ${data[i]}`,lx+14,164);});
+}
+
+function renderNetworkGrid(){
+  const networks=[...new Set(STORES.map(s=>s.network))];
+  const mk=currentMonthKey();
+  const selectedWeek=document.getElementById('weekSelect')?.value||'202614';
+  const html=networks.map(n=>{
+    const ns=STORES.filter(s=>s.network===n);
+    const nv=visits.filter(v=>{const s=STORES.find(x=>x.id===v.storeId);return s&&s.network===n&&v.date&&v.date.startsWith(mk);}).length;
+    const nt=ns.reduce((a,s)=>a+s.target,0);
+    const nc=ns.filter(s=>complianceStatus(s)==='Compliant').length;
+    const nu=ns.reduce((a,s)=>a+storeWeekUnits(s.id,selectedWeek),0);
+    const pct=nt?Math.round((nv/nt)*100):0;
+    return `<div class="network-card">
+      <div class="network-card-name">${networkPill(n)}</div>
+      <div class="network-stat"><span class="network-stat-label">Stores</span><span class="network-stat-val">${ns.length}</span></div>
+      <div class="network-stat"><span class="network-stat-label">Visits</span><span class="network-stat-val">${nv}/${nt}</span></div>
+      <div class="network-stat"><span class="network-stat-label">Compliant</span><span class="network-stat-val" style="color:var(--green)">${nc}</span></div>
+      <div class="network-stat"><span class="network-stat-label">W14 Units</span><span class="network-stat-val" style="color:var(--purple)">${nu}</span></div>
+      <div style="margin-top:8px;"><div class="progress-bar" style="width:100%"><div class="progress-fill ${pct>=100?'fill-green':pct>0?'fill-amber':'fill-red'}" style="width:${pct}%"></div></div>
+      <span style="font-size:11px;color:var(--text-dim);font-family:var(--font-m)">${pct}%</span></div>
+    </div>`;
+  }).join('');
+  document.getElementById('networkGrid').innerHTML=html;
+}
+
+// ─── TRACKER ─────────────────────────────────────────────────────────────────
+function renderTracker(filter,search){
+  filter=filter||activeFilter;
+  const searchVal=(search||document.getElementById('globalSearch').value||'').toLowerCase();
+  const selectedWeek=document.getElementById('weekSelect')?.value||'202614';
+  const tbody=document.getElementById('trackerBody');
+  const rows=STORES.filter(s=>{
+    const st=complianceStatus(s);
+    const label=`${s.name} ${s.network}`.toLowerCase();
+    return (filter==='ALL'||st===filter||s.network===filter)&&(!searchVal||label.includes(searchVal));
+  });
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text-dim)">No stores match filter</td></tr>';return;}
+  tbody.innerHTML=rows.map(s=>{
+    const done=visitsForStore(s.id).length;
+    const rem=Math.max(0,s.target-done);
+    const st=complianceStatus(s);
+    const pct=Math.min(100,Math.round((done/s.target)*100));
+    const fillClass=st==='Compliant'?'fill-green':done>0?'fill-amber':'fill-red';
+    const sv=visitsForStore(s.id).filter(v=>v.survey==='Y').length;
+    const wu=storeWeekUnits(s.id,selectedWeek);
+    return `<tr>
+      <td style="font-weight:500">${s.name}</td>
+      <td>${networkPill(s.network)}</td>
+      <td style="font-family:var(--font-m)">${s.target}</td>
+      <td style="font-family:var(--font-m);color:${done>=s.target?'var(--green)':'var(--text)'}">${done}</td>
+      <td style="font-family:var(--font-m);color:${rem>0?'var(--red)':'var(--text-dim)'}">${rem}</td>
+      <td><div class="progress-bar"><div class="progress-fill ${fillClass}" style="width:${pct}%"></div></div><span style="font-size:11px;font-family:var(--font-m);color:var(--text-dim)">${pct}%</span></td>
+      <td>${badgeFor(st)}</td>
+      <td><span class="badge ${sv>0?'badge-green':'badge-red'}">${sv>0?'✅ Done':'○ Pending'}</span></td>
+      <td style="font-family:var(--font-m);color:${wu>0?'var(--purple)':'var(--text-dim)'}">${wu>0?wu:'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function setFilter(val,el){
+  activeFilter=val;
+  document.querySelectorAll('#trackerFilters .filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderTracker(val);
+}
+
+// ─── VISIT LOG ─────────────────────────────────────────────────────────────────
+function renderVisitLog(search){
+  const searchVal=(search||'').toLowerCase();
+  const list=document.getElementById('visitLogList');
+  const sorted=[...visits].sort((a,b)=>b.date.localeCompare(a.date));
+  const filtered=searchVal?sorted.filter(v=>{const s=STORES.find(x=>x.id===v.storeId);return s&&`${s.name} ${s.network}`.toLowerCase().includes(searchVal);}):sorted;
+  if(!filtered.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">No visits logged yet.</div></div>';return;}
+  list.innerHTML=filtered.map(v=>{
+    const s=STORES.find(x=>x.id===v.storeId);
+    const name=s?`${s.name} — ${s.network}`:v.storeId;
+    return `<div class="visit-log-item">
+      <div style="flex:1">
+        <div class="visit-store">${name}</div>
+        <div class="visit-date">${v.date}${v.personnel?' · '+v.personnel:''}</div>
+        ${v.notes?`<div style="font-size:12px;color:var(--text-dim);margin-top:4px">${v.notes.substring(0,120)}${v.notes.length>120?'…':''}</div>`:''}
+      </div>
+      <div class="visit-meta">
+        ${v.survey==='Y'?'<span class="badge badge-green">Survey ✅</span>':''}
+        ${v.photo==='Y'?'<span class="badge badge-blue">📷 Photos</span>':''}
+        ${v.comp==='Y'?'<span class="badge badge-amber">✓ Compliant</span>':''}
+        ${v.staffTrained>0?`<span class="badge badge-blue">👥 ${v.staffTrained} trained</span>`:''}
+      </div>
+      <button class="btn btn-danger" onclick="deleteVisit('${v.id}')">✕</button>
+    </div>`;
+  }).join('');
+}
+
+// ─── SALES ─────────────────────────────────────────────────────────────────────
+function renderSales(){
+  const week=document.getElementById('weekSelect')?.value||'202614';
+  const wData=weeklyTotals[week]||{u:0,t:0};
+  const pct=wData.t>0?Math.round((wData.u/wData.t)*100):0;
+
+  document.getElementById('salesKpis').innerHTML=`
+    <div class="kpi-card purple"><div class="kpi-label">Units Sold</div><div class="kpi-value">${wData.u}</div><div class="kpi-sub">W${week.slice(4)} total</div></div>
+    <div class="kpi-card purple"><div class="kpi-label">Weighted Target</div><div class="kpi-value">${Math.round(wData.t)}</div><div class="kpi-sub">W${week.slice(4)} target</div></div>
+    <div class="kpi-card ${pct>=100?'green':pct>=80?'amber':'red'}"><div class="kpi-label">Attainment</div><div class="kpi-value">${pct}%</div><div class="kpi-sub">vs target</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">Stores Selling</div><div class="kpi-value">${STORES.filter(s=>storeWeekUnits(s.id,week)>0).length}</div><div class="kpi-sub">of ${STORES.length} stores</div></div>`;
+
+  // Network bar chart
+  const networks=[...new Set(STORES.map(s=>s.network))];
+  const netUnits=networks.map(n=>STORES.filter(s=>s.network===n).reduce((a,s)=>a+storeWeekUnits(s.id,week),0));
+  drawNetBar(networks,netUnits);
+
+  // Product mix donut
+  const mixTotals={Smartphone_Premium:0,Smartphone_High:0,Smartphone_Low:0,Tablet_Low:0,Tablet_Premium:0,Computer_Premium:0};
+  STORES.forEach(s=>{
+    const d=salesDb[s.id]?.[week];
+    if(d)Object.entries(d).forEach(([k,v])=>{if(mixTotals[k]!==undefined)mixTotals[k]+=v.u;});
+  });
+  const mixColors=['#1f3ef5','#00c853','#ffab00','#a855f7','#ff3d57','#06b6d4'];
+  const mixLabels=['S.Prem','S.High','S.Low','Tab.L','Tab.P','PC'];
+  drawDonut('chartSalesMix',Object.values(mixTotals),mixColors,mixLabels);
+
+  // League table
+  const storeData=STORES.map(s=>({store:s,units:storeWeekUnits(s.id,week),target:storeWeekTarget(s.id,week)}))
+    .sort((a,b)=>b.units-a.units);
+  const tbody=document.getElementById('salesBody');
+  tbody.innerHTML=storeData.map(({store:s,units:u,target:t})=>{
+    const att=t>0?Math.round((u/t)*100):0;
+    const pct2=Math.min(100,att);
+    const fill=att>=100?'fill-green':att>=80?'fill-amber':'fill-red';
+    // product mix for this store
+    const d=salesDb[s.id]?.[week];
+    let mixHtml='<span style="color:var(--text-muted)">—</span>';
+    if(d){
+      const sp=(d.Smartphone_Premium?.u||0)+(d.Smartphone_High?.u||0);
+      const sl=d.Smartphone_Low?.u||0;
+      const tb=(d.Tablet_Low?.u||0)+(d.Tablet_Premium?.u||0);
+      const pc=d.Computer_Premium?.u||0;
+      const parts=[];
+      if(sp>0)parts.push(`<span class="badge badge-blue">${sp} S.Prem/High</span>`);
+      if(sl>0)parts.push(`<span class="badge badge-amber">${sl} S.Low</span>`);
+      if(tb>0)parts.push(`<span class="badge badge-purple">${tb} Tab</span>`);
+      if(pc>0)parts.push(`<span class="badge badge-green">${pc} PC</span>`);
+      if(parts.length)mixHtml=parts.join(' ');
+    }
+    return `<tr>
+      <td style="font-weight:500">${s.name}</td>
+      <td>${networkPill(s.network)}</td>
+      <td style="font-family:var(--font-m);font-weight:600;color:${u>0?'var(--purple)':'var(--text-muted)'}">${u||'—'}</td>
+      <td style="font-family:var(--font-m);color:var(--text-dim)">${t>0?t.toFixed(1):'—'}</td>
+      <td style="font-family:var(--font-m);color:${att>=100?'var(--green)':att>=80?'var(--amber)':'var(--red)'}">${t>0?att+'%':'—'}</td>
+      <td><div class="progress-bar"><div class="progress-fill ${fill}" style="width:${pct2}%"></div></div></td>
+      <td>${mixHtml}</td>
+    </tr>`;
+  }).join('');
+}
+
+function drawNetBar(labels,data){
+  const canvas=document.getElementById('chartSalesNet');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const W=canvas.offsetWidth||300;canvas.width=W;canvas.height=200;
+  ctx.clearRect(0,0,W,200);
+  const maxVal=Math.max(...data,1);
+  const bw=(W-40)/labels.length-8;
+  const COLS={O2:'#4d9eff',EE:'#00c853',Tesco:'#5599ff',Currys:'#a06aff',Vodafone:'#ff4d6a',H3G:'#ffaa33'};
+  labels.forEach((l,i)=>{
+    const x=20+i*((W-40)/labels.length);
+    const bh=(data[i]/maxVal)*140;const y=155-bh;
+    ctx.fillStyle=COLS[l]||'#1f3ef5';
+    ctx.beginPath();ctx.roundRect(x,y,bw,bh,4);ctx.fill();
+    ctx.fillStyle='#7070a0';ctx.font='9px DM Mono';ctx.textAlign='center';
+    ctx.fillText(l.substring(0,4),x+bw/2,170);
+    if(data[i]>0){ctx.fillStyle='#e8e8f0';ctx.fillText(data[i],x+bw/2,y-4);}
+  });
+  ctx.textAlign='left';
+}
+
+// ─── FILE IMPORT ──────────────────────────────────────────────────────────────
+function handleFileImport(input){
+  const file=input.files[0];
+  if(!file)return;
+  const status=document.getElementById('importStatus');
+  const ext=file.name.split('.').pop().toLowerCase();
+
+  if(ext==='csv'){
+    const reader=new FileReader();
+    reader.onload=e=>{
+      try{
+        parseCSVSales(e.target.result,file.name);
+      }catch(err){
+        status.innerHTML=`<div class="import-status error">❌ Error parsing CSV: ${err.message}</div>`;
+      }
+    };
+    reader.readAsText(file);
+  } else if(ext==='xlsx'){
+    status.innerHTML='<div class="import-status error">⚠️ .xlsx files require the SheetJS library. Please export the <em>Sales and Target Data</em> sheet as CSV and upload that instead.</div>';
+  } else if(ext==='xlsb'){
+    status.innerHTML='<div class="import-status error">⚠️ .xlsb (binary) files can\'t be processed directly in the browser. Please open the file in Excel, go to the <strong>Sales and Target Data</strong> sheet, and save/export it as CSV. Then upload the CSV here.</div>';
+  } else {
+    status.innerHTML='<div class="import-status error">❌ Unsupported file type. Please use CSV.</div>';
+  }
+  input.value='';
+}
+
+function parseCSVSales(text,filename){
+  const status=document.getElementById('importStatus');
+  const lines=text.split('\n').filter(l=>l.trim());
+  if(lines.length<2){throw new Error('File appears empty');}
+  const headers=lines[0].split(',').map(h=>h.trim().replace(/"/g,''));
+
+  const tIdx=headers.findIndex(h=>h.includes('Territory'));
+  const sIdx=headers.findIndex(h=>h.includes('Site_Name'));
+  const uIdx=headers.findIndex(h=>h.includes('Sell-Out Qty'));
+  const tgIdx=headers.findIndex(h=>h.includes('Target'));
+  const wIdx=headers.findIndex(h=>h.includes('Calendar Week'));
+  const cIdx=headers.findIndex(h=>h.includes('Product Category'));
+  const segIdx=headers.findIndex(h=>h.includes('Segmentation'));
+
+  if([tIdx,sIdx,uIdx,wIdx,cIdx].some(i=>i===-1)){throw new Error('Missing required columns. Expected: Territory, Site_Name, Sell-Out Qty, Calendar Week, Product Category');}
+
+  const MY_STORES=new Set(['522','2195','571','2323','R130','203','5335','60366','2281','5137','2295','4238','213','2294','60892','1443','4321','556','3491','2406','2398','555','5333','60293','560','2838','2413','R144','229','1613','60819','554','70197','2345','R270','1375','230','60051','4220','262','60459','559']);
+
+  const newSales={};const newWeekly={};let rowsProcessed=0;
+
+  for(let i=1;i<lines.length;i++){
+    const cols=lines[i].split(',').map(c=>c.trim().replace(/"/g,''));
+    if(cols[tIdx]!=='Terr14')continue;
+    const siteName=cols[sIdx]||'';
+    const m=siteName.match(/- (\w+)$/);
+    if(!m)continue;
+    const sc=m[1];
+    if(!MY_STORES.has(sc))continue;
+    const week=String(cols[wIdx]||'').replace('.0','');
+    const cat=cols[cIdx]||'';
+    const seg=segIdx>=0?(cols[segIdx]||''):'';
+    const u=parseFloat(cols[uIdx])||0;
+    const tg=tgIdx>=0?(parseFloat(cols[tgIdx])||0):0;
+    const key=cat+(seg?'_'+seg:'');
+    if(!newSales[sc])newSales[sc]={};
+    if(!newSales[sc][week])newSales[sc][week]={};
+    if(!newSales[sc][week][key])newSales[sc][week][key]={u:0,t:0};
+    newSales[sc][week][key].u+=u;
+    newSales[sc][week][key].t+=tg;
+    if(!newWeekly[week])newWeekly[week]={u:0,t:0};
+    newWeekly[week].u+=u;newWeekly[week].t+=tg;
+    rowsProcessed++;
+  }
+
+  if(rowsProcessed===0){throw new Error('No Terr14 rows found that match your 44 stores. Check the Territory column contains "Terr14".');}
+
+  // Merge with existing
+  Object.entries(newSales).forEach(([sc,weeks])=>{
+    if(!salesDb[sc])salesDb[sc]={};
+    Object.entries(weeks).forEach(([wk,cats])=>{salesDb[sc][wk]=cats;});
+  });
+  Object.entries(newWeekly).forEach(([wk,d])=>{weeklyTotals[wk]={u:Math.round(d.u),t:Math.round(d.t)};});
+
+  localStorage.setItem('svt_sales',JSON.stringify(salesDb));
+  localStorage.setItem('svt_weekly',JSON.stringify(weeklyTotals));
+
+  populateWeekSelect();
+  renderSales();renderDashboard();
+
+  const weeks=Object.keys(newWeekly).sort();
+  status.innerHTML=`<div class="import-status success">✅ Import successful! Processed ${rowsProcessed} rows across weeks ${weeks.join(', ')}. Go to the Sales tab to view.</div>`;
+}
+
+// ─── TRAINING ─────────────────────────────────────────────────────────────────
+function renderTraining(){
+  const mk=currentMonthKey();
+  const mt=training.filter(t=>t.date&&t.date.startsWith(mk));
+  const total=mt.reduce((a,t)=>a+(parseInt(t.count)||0),0);
+  const stores=new Set(mt.map(t=>t.storeId)).size;
+  document.getElementById('trainingTotal').textContent=total;
+  document.getElementById('trainingStores').textContent=stores;
+  document.getElementById('trainingAvg').textContent=stores?(total/stores).toFixed(1):0;
+  const tbody=document.getElementById('trainingBody');
+  const sorted=[...training].sort((a,b)=>b.date.localeCompare(a.date));
+  tbody.innerHTML=sorted.length?sorted.map(t=>{const s=STORES.find(x=>x.id===t.storeId);return `<tr><td>${s?`${s.name} — ${s.network}`:t.storeId}</td><td style="font-family:var(--font-m)">${t.date}</td><td style="font-family:var(--font-m)">${t.count}</td><td>${t.topic||'—'}</td><td style="color:var(--text-dim);font-size:12px">${t.notes||''}</td></tr>`;}).join(''):'<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-dim)">No training logged yet</td></tr>';
+}
+
+function renderSurveys(){
+  document.getElementById('surveysBody').innerHTML=STORES.map(s=>{const sv=visitsForStore(s.id).filter(v=>v.survey==='Y').length;return `<tr><td>${s.name}</td><td>${networkPill(s.network)}</td><td style="font-family:var(--font-m)">${sv}</td><td>${sv>0?'<span class="badge badge-green">✅ Done</span>':'<span class="badge badge-red">○ Pending</span>'}</td></tr>`;}).join('');
+}
+
+function renderStores(){
+  document.getElementById('storesBody').innerHTML=STORES.map(s=>`<tr><td style="font-family:var(--font-m);color:var(--text-dim)">${s.id}</td><td style="font-weight:500">${s.name}</td><td>${networkPill(s.network)}</td><td style="font-family:var(--font-m)">${s.target}x / month</td></tr>`).join('');
+}
+
+// ─── MODAL / FORM ─────────────────────────────────────────────────────────────
+function openLogModal(){
+  toggleState={survey:'N',photo:'N',comp:'N'};
+  ['tSurveyN','tSurveyY','tPhotoN','tPhotoY','tCompN','tCompY'].forEach(id=>document.getElementById(id).className='toggle-btn');
+  document.getElementById('tSurveyN').classList.add('selected-n');
+  document.getElementById('tPhotoN').classList.add('selected-n');
+  document.getElementById('tCompN').classList.add('selected-n');
+  document.getElementById('fStore').value='';
+  document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('fNotes').value='';
+  document.getElementById('fPersonnel').value='';
+  document.getElementById('fStaffTrained').value='0';
+  document.getElementById('logModal').classList.add('open');
+}
+
+function openTrainingModal(){
+  ['tStore','tDate','tCount','tTopic','tNotes'].forEach(id=>{if(document.getElementById(id))document.getElementById(id).value=id==='tCount'?'1':id==='tDate'?new Date().toISOString().split('T')[0]:'';});
+  document.getElementById('trainingModal').classList.add('open');
+}
+
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+
+function setToggle(field,val){
+  toggleState[field]=val;
+  const map={survey:['tSurveyN','tSurveyY'],photo:['tPhotoN','tPhotoY'],comp:['tCompN','tCompY']};
+  const[nId,yId]=map[field];
+  document.getElementById(nId).className='toggle-btn'+(val==='N'?' selected-n':'');
+  document.getElementById(yId).className='toggle-btn'+(val==='Y'?' selected-y':'');
+}
+
+function saveVisit(){
+  const storeId=document.getElementById('fStore').value;
+  const date=document.getElementById('fDate').value;
+  if(!storeId||!date){alert('Please select a store and date.');return;}
+  visits.push({id:Math.random().toString(36).substring(2,10),storeId,date,survey:toggleState.survey,photo:toggleState.photo,comp:toggleState.comp,staffTrained:parseInt(document.getElementById('fStaffTrained').value)||0,personnel:document.getElementById('fPersonnel').value,notes:document.getElementById('fNotes').value,ts:Date.now()});
+  save();closeModal('logModal');renderAll();
+}
+
+function deleteVisit(id){if(!confirm('Delete this visit?'))return;visits=visits.filter(v=>v.id!==id);save();renderAll();}
+
+function saveTraining(){
+  const storeId=document.getElementById('tStore').value;
+  const date=document.getElementById('tDate').value;
+  if(!storeId||!date){alert('Please select a store and date.');return;}
+  training.push({id:Math.random().toString(36).substring(2,10),storeId,date,count:parseInt(document.getElementById('tCount').value)||1,topic:document.getElementById('tTopic').value,notes:document.getElementById('tNotes').value});
+  save();closeModal('trainingModal');renderAll();
+}
+
+// ─── NAV ───────────────────────────────────────────────────────────────────────
+const VIEW_TITLES={dashboard:'KPI Dashboard',tracker:'Monthly Tracker',log:'Visit Log',sales:'Sales Data',import:'Import Sales File',training:'Training Completions',surveys:'Survey Tracker',stores:'Store Directory'};
+const VIEW_ORDER=['dashboard','tracker','log','sales','import','training','surveys','stores'];
+
+function showView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const idx=VIEW_ORDER.indexOf(name);
+  if(idx>=0)document.querySelectorAll('.nav-item')[idx]?.classList.add('active');
+  document.getElementById('topbarTitle').textContent=VIEW_TITLES[name];
+  currentView=name;
+  if(name==='sales')renderSales();
+  if(name==='dashboard'){renderDashboard();}
+}
+
+function handleSearch(val){if(currentView==='tracker')renderTracker(activeFilter,val);if(currentView==='log')renderVisitLog(val);}
+
+document.querySelectorAll('.modal-backdrop').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});});
+window.addEventListener('load',init);
+window.addEventListener('resize',()=>{if(currentView==='dashboard')renderDashboard();if(currentView==='sales')renderSales();});
+</script>
+</body>
+</html>
