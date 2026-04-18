@@ -1,0 +1,20 @@
+{
+  "name": "VisitPro — Samsung MX",
+  "short_name": "VisitPro",
+  "start_url": "/visitpro/",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#1f3ef5",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192/1f3ef5/ffffff?text=VP",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/1f3ef5/ffffff?text=VP",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
