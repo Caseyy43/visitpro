@@ -960,5 +960,10 @@ document.querySelectorAll('.modal-backdrop').forEach(m=>{m.addEventListener('cli
 window.addEventListener('load',init);
 window.addEventListener('resize',()=>{if(currentView==='dashboard')renderDashboard();if(currentView==='sales')renderSales();});
 </script>
+  <script>
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('/visitpro/sw.js');
+  }
+</script>
 </body>
 </html>
