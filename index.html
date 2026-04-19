@@ -722,12 +722,198 @@
 
   /* Scrollbar for sidebar */
   nav::-webkit-scrollbar { width: 3px; }
+
+  /* ── STORE PANEL ── */
+  .panel-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 300;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .panel-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .store-panel {
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: 480px;
+    max-width: 95vw;
+    background: var(--surface);
+    border-left: 1px solid var(--border-bright);
+    z-index: 400;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
+    box-shadow: -20px 0 60px rgba(0,0,0,0.5);
+  }
+  .store-panel.open {
+    transform: translateX(0);
+  }
+  .panel-head {
+    padding: 24px 24px 18px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .panel-head::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 24px; right: 24px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: 0.3;
+  }
+  .panel-store-name {
+    font-family: var(--font-d);
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+    margin-bottom: 6px;
+  }
+  .panel-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .panel-close {
+    position: absolute;
+    top: 20px; right: 20px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: all 0.15s;
+    font-family: var(--font-b);
+  }
+  .panel-close:hover { color: var(--text); border-color: var(--border-bright); }
+  .panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .panel-section-title {
+    font-family: var(--font-m);
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--cyan);
+    opacity: 0.7;
+    margin-bottom: 12px;
+  }
+  .panel-stat-row {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .panel-stat {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 12px;
+    text-align: center;
+  }
+  .panel-stat-val {
+    font-family: var(--font-d);
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .panel-stat-label {
+    font-family: var(--font-m);
+    font-size: 9px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-top: 4px;
+  }
+  .panel-visit-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    transition: border-color 0.15s;
+  }
+  .panel-visit-item:hover { border-color: var(--border-bright); }
+  .panel-visit-date {
+    font-family: var(--font-m);
+    font-size: 11px;
+    color: var(--cyan);
+    margin-bottom: 6px;
+    opacity: 0.8;
+  }
+  .panel-visit-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+  .panel-visit-notes {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    margin-top: 6px;
+  }
+  .panel-notes-area {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    padding: 14px;
+    font-size: 13px;
+    font-family: var(--font-b);
+    outline: none;
+    resize: vertical;
+    min-height: 100px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    line-height: 1.6;
+  }
+  .panel-notes-area:focus {
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px rgba(0,229,255,0.08);
+  }
+  .panel-notes-saved {
+    font-family: var(--font-m);
+    font-size: 10px;
+    color: var(--green);
+    opacity: 0;
+    transition: opacity 0.3s;
+    margin-left: 8px;
+  }
+  .panel-notes-saved.show { opacity: 1; }
+  .panel-empty {
+    text-align: center;
+    padding: 30px 20px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+  .panel-sales-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .panel-sales-row:last-child { border-bottom: none; }
+  .panel-sales-cat { color: var(--text-dim); font-family: var(--font-m); font-size: 10px; letter-spacing: 0.05em; }
+  .panel-sales-val { font-weight: 700; font-family: var(--font-d); font-size: 16px; }
+  .panel-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+  }
+
 </style>
-<link rel="manifest" href="/visitpro/manifest.json">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="VisitPro">
-<meta name="theme-color" content="#00e5ff">
 </head>
 <body>
 <div class="shell">
@@ -1190,7 +1376,7 @@ function renderTracker(filter,search){
     const sv=visitsForStore(s.id).filter(v=>v.survey==='Y').length;
     const wu=storeWeekUnits(s.id,selectedWeek);
     return `<tr>
-      <td style="font-weight:500">${s.name}</td>
+      <td style="font-weight:500;cursor:pointer;color:var(--cyan)" onclick="openStorePanel('${s.id}')">${s.name} <span style='font-size:10px;opacity:0.5'>→</span></td>
       <td>${networkPill(s.network)}</td>
       <td style="font-family:var(--font-m)">${s.target}</td>
       <td style="font-family:var(--font-m);color:${done>=s.target?'var(--green)':'var(--text)'}">${done}</td>
@@ -1222,7 +1408,7 @@ function renderVisitLog(search){
     const name=s?`${s.name} — ${s.network}`:v.storeId;
     return `<div class="visit-log-item">
       <div style="flex:1">
-        <div class="visit-store">${name}</div>
+        <div class="visit-store" style="cursor:pointer" onclick="openStorePanel('${v.storeId}')">${name} <span style='font-size:11px;opacity:0.4;color:var(--cyan)'>→</span></div>
         <div class="visit-date">${v.date}${v.personnel?' · '+v.personnel:''}</div>
         ${v.notes?`<div style="font-size:12px;color:var(--text-dim);margin-top:4px">${v.notes.substring(0,120)}${v.notes.length>120?'…':''}</div>`:''}
       </div>
@@ -1288,7 +1474,7 @@ function renderSales(){
       if(parts.length)mixHtml=parts.join(' ');
     }
     return `<tr>
-      <td style="font-weight:500">${s.name}</td>
+      <td style="font-weight:500;cursor:pointer;color:var(--cyan)" onclick="openStorePanel('${s.id}')">${s.name} <span style='font-size:10px;opacity:0.5'>→</span></td>
       <td>${networkPill(s.network)}</td>
       <td style="font-family:var(--font-m);font-weight:600;color:${u>0?'var(--purple)':'var(--text-muted)'}">${u||'—'}</td>
       <td style="font-family:var(--font-m);color:var(--text-dim)">${t>0?t.toFixed(1):'—'}</td>
@@ -1429,7 +1615,7 @@ function renderSurveys(){
 }
 
 function renderStores(){
-  document.getElementById('storesBody').innerHTML=STORES.map(s=>`<tr><td style="font-family:var(--font-m);color:var(--text-dim)">${s.id}</td><td style="font-weight:500">${s.name}</td><td>${networkPill(s.network)}</td><td style="font-family:var(--font-m)">${s.target}x / month</td></tr>`).join('');
+  document.getElementById('storesBody').innerHTML=STORES.map(s=>`<tr><td style="font-family:var(--font-m);color:var(--text-dim)">${s.id}</td><td style="font-weight:500;cursor:pointer;color:var(--cyan)" onclick="openStorePanel('${s.id}')">${s.name} <span style='font-size:10px;opacity:0.5'>→</span></td><td>${networkPill(s.network)}</td><td style="font-family:var(--font-m)">${s.target}x / month</td></tr>`).join('');
 }
 
 // ─── MODAL / FORM ─────────────────────────────────────────────────────────────
@@ -1501,11 +1687,171 @@ function handleSearch(val){if(currentView==='tracker')renderTracker(activeFilter
 document.querySelectorAll('.modal-backdrop').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});});
 window.addEventListener('load',init);
 window.addEventListener('resize',()=>{if(currentView==='dashboard')renderDashboard();if(currentView==='sales')renderSales();});
-</script>
-<script>
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('/visitpro/sw.js');
+
+// ─── STORE PANEL ─────────────────────────────────────────────────────────────
+let activePanelStoreId = null;
+
+function openStorePanel(storeId) {
+  const store = STORES.find(s => s.id === storeId);
+  if (!store) return;
+  activePanelStoreId = storeId;
+
+  document.getElementById('panelStoreName').textContent = `${store.name}`;
+  document.getElementById('panelStoreMeta').innerHTML = `
+    ${networkPill(store.network)}
+    <span style="font-family:var(--font-m);font-size:10px;color:var(--text-dim);margin-left:4px">ID: ${store.id}</span>
+  `;
+
+  renderPanelBody(store);
+  document.getElementById('storePanel').classList.add('open');
+  document.getElementById('panelOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeStorePanel() {
+  document.getElementById('storePanel').classList.remove('open');
+  document.getElementById('panelOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  activePanelStoreId = null;
+}
+
+function renderPanelBody(store) {
+  const allVisits = visits.filter(v => v.storeId === store.id).sort((a,b) => b.date.localeCompare(a.date));
+  const monthVisits = visitsForStore(store.id);
+  const status = complianceStatus(store);
+  const selectedWeek = document.getElementById('weekSelect')?.value || '202614';
+  const wu = storeWeekUnits(store.id, selectedWeek);
+  const wt = storeWeekTarget(store.id, selectedWeek);
+  const att = wt > 0 ? Math.round((wu/wt)*100) : null;
+
+  // Persistent notes
+  const noteKey = `svt_note_${store.id}`;
+  const savedNote = localStorage.getItem(noteKey) || '';
+
+  // Sales breakdown for selected week
+  const salesData = salesDb[store.id]?.[selectedWeek] || {};
+  const salesEntries = Object.entries(salesData).filter(([,v]) => v.u > 0);
+
+  document.getElementById('panelBody').innerHTML = `
+    <!-- STATS ROW -->
+    <div>
+      <div class="panel-section-title">This Month</div>
+      <div class="panel-stat-row">
+        <div class="panel-stat">
+          <div class="panel-stat-val" style="color:${monthVisits.length >= store.target ? 'var(--green)' : 'var(--amber)'}">${monthVisits.length}</div>
+          <div class="panel-stat-label">Visits Done</div>
+        </div>
+        <div class="panel-stat">
+          <div class="panel-stat-val" style="color:var(--cyan)">${store.target}</div>
+          <div class="panel-stat-label">Required</div>
+        </div>
+        <div class="panel-stat">
+          <div class="panel-stat-val" style="color:${status==='Compliant'?'var(--green)':status==='Under Visited'?'var(--amber)':'var(--red)'}">${Math.max(0,store.target-monthVisits.length)}</div>
+          <div class="panel-stat-label">Remaining</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SALES -->
+    <div>
+      <div class="panel-section-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span>Sales — W${selectedWeek.slice(4)}</span>
+        ${att !== null ? `<span style="font-family:var(--font-m);font-size:10px;color:${att>=100?'var(--green)':att>=80?'var(--amber)':'var(--red)'}">${att}% vs target</span>` : ''}
+      </div>
+      ${wu > 0 ? `
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+            <span style="font-family:var(--font-m);font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.15em">Category</span>
+            <span style="font-family:var(--font-m);font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.15em">Units</span>
+          </div>
+          ${salesEntries.map(([cat,v]) => `
+            <div class="panel-sales-row">
+              <span class="panel-sales-cat">${cat.replace('_',' ')}</span>
+              <span class="panel-sales-val" style="color:var(--purple)">${v.u}</span>
+            </div>
+          `).join('')}
+          <div class="panel-sales-row" style="margin-top:6px;border-top:1px solid var(--border-bright);padding-top:10px">
+            <span class="panel-sales-cat" style="color:var(--text)">TOTAL</span>
+            <span class="panel-sales-val" style="color:var(--cyan)">${wu}</span>
+          </div>
+        </div>
+      ` : `<div class="panel-empty">No sales data for W${selectedWeek.slice(4)}</div>`}
+    </div>
+
+    <!-- STORE NOTES -->
+    <div>
+      <div class="panel-section-title" style="display:flex;align-items:center">
+        <span>Store Notes</span>
+        <span class="panel-notes-saved" id="notesSavedIndicator">✓ Saved</span>
+      </div>
+      <textarea
+        class="panel-notes-area"
+        id="panelNotesArea"
+        placeholder="Add persistent notes about this store — key contacts, access info, anything useful…"
+        oninput="autosaveNote('${store.id}', this.value)"
+      >${savedNote}</textarea>
+    </div>
+
+    <!-- VISIT HISTORY -->
+    <div>
+      <div class="panel-section-title">Visit History (${allVisits.length} total)</div>
+      ${allVisits.length ? allVisits.map(v => `
+        <div class="panel-visit-item">
+          <div class="panel-visit-date">${v.date}</div>
+          <div class="panel-visit-badges">
+            ${v.survey==='Y' ? '<span class="badge badge-green">Survey ✅</span>' : ''}
+            ${v.photo==='Y' ? '<span class="badge badge-blue">📷 Photos</span>' : ''}
+            ${v.comp==='Y' ? '<span class="badge badge-amber">✓ Compliant</span>' : ''}
+            ${v.staffTrained>0 ? `<span class="badge badge-purple">👥 ${v.staffTrained} trained</span>` : ''}
+            ${v.personnel ? `<span class="badge" style="background:var(--surface3);color:var(--text-dim);border:1px solid var(--border)">👤 ${v.personnel}</span>` : ''}
+          </div>
+          ${v.notes ? `<div class="panel-visit-notes">${v.notes}</div>` : ''}
+        </div>
+      `).join('') : '<div class="panel-empty">No visits logged yet for this store</div>'}
+    </div>
+  `;
+}
+
+let noteTimer = null;
+function autosaveNote(storeId, value) {
+  clearTimeout(noteTimer);
+  noteTimer = setTimeout(() => {
+    localStorage.setItem(`svt_note_${storeId}`, value);
+    const ind = document.getElementById('notesSavedIndicator');
+    if (ind) { ind.classList.add('show'); setTimeout(() => ind.classList.remove('show'), 2000); }
+  }, 600);
+}
+
+function openLogModalForStore() {
+  closeStorePanel();
+  openLogModal();
+  if (activePanelStoreId) {
+    setTimeout(() => {
+      const sel = document.getElementById('fStore');
+      if (sel) sel.value = activePanelStoreId;
+    }, 50);
   }
+}
+
 </script>
+
+<!-- STORE PANEL OVERLAY -->
+<div class="panel-overlay" id="panelOverlay" onclick="closeStorePanel()"></div>
+
+<!-- STORE PANEL -->
+<div class="store-panel" id="storePanel">
+  <div class="panel-head">
+    <div class="panel-store-name" id="panelStoreName">—</div>
+    <div class="panel-meta" id="panelStoreMeta"></div>
+    <button class="panel-close" onclick="closeStorePanel()">✕</button>
+  </div>
+  <div class="panel-body" id="panelBody">
+    <!-- dynamically populated -->
+  </div>
+  <div class="panel-footer">
+    <button class="btn btn-primary" style="width:100%" onclick="openLogModalForStore()">+ Log Visit</button>
+  </div>
+</div>
+
 </body>
 </html>
