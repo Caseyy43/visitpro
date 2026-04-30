@@ -945,7 +945,9 @@
   <div class="main">
     <header class="topbar">
       <div class="topbar-title" id="topbarTitle">KPI Dashboard</div>
+      <span id="syncStatus" style="font-family:var(--font-m);font-size:11px;color:var(--cyan);opacity:0;transition:opacity 0.5s;letter-spacing:0.05em"></span>
       <div class="action-row">
+        <button class="btn btn-ghost" onclick="loadFromCloud()" style="padding:7px 10px" title="Sync now">⟳</button>
         <input class="search-input" type="text" placeholder="Search stores…" id="globalSearch" oninput="handleSearch(this.value)">
         <button class="btn btn-primary" onclick="openLogModal()">+ Log Visit</button>
       </div>
@@ -1141,16 +1143,179 @@ const SALES_DB = {"1375":{"202601":{"Computer_Premium":{"u":0.0,"t":0.02},"Smart
 
 const WEEKLY_TOTALS={"202601":{"u":283,"t":265},"202602":{"u":229,"t":211},"202603":{"u":195,"t":209},"202604":{"u":242,"t":207},"202605":{"u":227,"t":254},"202606":{"u":196,"t":227},"202607":{"u":198,"t":250},"202608":{"u":189,"t":197},"202609":{"u":208,"t":272},"202610":{"u":252,"t":353},"202611":{"u":221,"t":287},"202612":{"u":250,"t":218},"202613":{"u":259,"t":338},"202614":{"u":280,"t":190}};
 
+// ─── SUPABASE CONFIG ──────────────────────────────────────────────────────────
+const SB_URL = 'https://siybzqhlalysbvdgusfb.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpeWJ6cWhsYWx5c2J2ZGd1c2ZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1MzUwNDgsImV4cCI6MjA5MzExMTA0OH0.Mee3l6407q5iN2lFoPBMudCbJR_R4imr-J51WwKQrkI';
+
+async function sbFetch(path, method='GET', body=null) {
+  const opts = {
+    method,
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer ' + SB_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': method==='POST' ? 'resolution=merge-duplicates' : ''
+    }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(SB_URL + '/rest/v1/' + path, opts);
+  if (!res.ok) { console.error('SB error', res.status, await res.text()); return null; }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+async function sbUpsert(table, data) {
+  return sbFetch(table + '?on_conflict=' + getPK(table), 'POST', Array.isArray(data) ? data : [data]);
+}
+
+async function sbDelete(table, id) {
+  return sbFetch(table + '?id=eq.' + id, 'DELETE');
+}
+
+function getPK(table) {
+  const pks = { visits:'id', training:'id', store_notes:'store_id', sales_data:'store_id,week,category', weekly_totals:'week' };
+  return pks[table] || 'id';
+}
+
 // ─── STATE ────────────────────────────────────────────────────────────────────
-let visits=JSON.parse(localStorage.getItem('svt_visits')||'[]');
-let training=JSON.parse(localStorage.getItem('svt_training')||'[]');
+let visits = [];
+let training = [];
 let toggleState={survey:'N',photo:'N',comp:'N'};
 let activeFilter='ALL';
 let currentView='dashboard';
-let salesDb=JSON.parse(localStorage.getItem('svt_sales')||'null')||SALES_DB;
-let weeklyTotals=JSON.parse(localStorage.getItem('svt_weekly')||'null')||WEEKLY_TOTALS;
+let salesDb = JSON.parse(localStorage.getItem('svt_sales')||'null') || SALES_DB;
+let weeklyTotals = JSON.parse(localStorage.getItem('svt_weekly')||'null') || WEEKLY_TOTALS;
+let storeNotes = {};
+let syncing = false;
 
-function save(){localStorage.setItem('svt_visits',JSON.stringify(visits));localStorage.setItem('svt_training',JSON.stringify(training));}
+function showSyncStatus(msg, type='info') {
+  let el = document.getElementById('syncStatus');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = type==='ok' ? 'var(--green)' : type==='err' ? 'var(--red)' : 'var(--cyan)';
+  el.style.opacity = '1';
+  if (type === 'ok') setTimeout(() => { if(el) el.style.opacity='0'; }, 3000);
+}
+
+// Legacy local save (kept as fallback)
+function save() {
+  localStorage.setItem('svt_visits', JSON.stringify(visits));
+  localStorage.setItem('svt_training', JSON.stringify(training));
+}
+
+// ─── CLOUD SYNC ───────────────────────────────────────────────────────────────
+async function loadFromCloud() {
+  showSyncStatus('⟳ Syncing...');
+  try {
+    const [v, t, sn, sd, wt] = await Promise.all([
+      sbFetch('visits?order=date.desc'),
+      sbFetch('training?order=date.desc'),
+      sbFetch('store_notes'),
+      sbFetch('sales_data'),
+      sbFetch('weekly_totals')
+    ]);
+
+    if (v) visits = v.map(r => ({
+      id:r.id, storeId:r.store_id, date:r.date,
+      survey:r.survey, photo:r.photo, comp:r.comp,
+      staffTrained:r.staff_trained, personnel:r.personnel,
+      notes:r.notes, ts:r.ts
+    }));
+
+    if (t) training = t.map(r => ({
+      id:r.id, storeId:r.store_id, date:r.date,
+      count:r.count, topic:r.topic, notes:r.notes
+    }));
+
+    if (sn) {
+      storeNotes = {};
+      sn.forEach(r => storeNotes[r.store_id] = r.notes);
+    }
+
+    if (sd && sd.length) {
+      salesDb = {};
+      sd.forEach(r => {
+        if (!salesDb[r.store_id]) salesDb[r.store_id] = {};
+        if (!salesDb[r.store_id][r.week]) salesDb[r.store_id][r.week] = {};
+        salesDb[r.store_id][r.week][r.category] = { u: parseFloat(r.units), t: parseFloat(r.target) };
+      });
+      localStorage.setItem('svt_sales', JSON.stringify(salesDb));
+    }
+
+    if (wt && wt.length) {
+      weeklyTotals = {};
+      wt.forEach(r => weeklyTotals[r.week] = { u: parseFloat(r.units), t: parseFloat(r.target) });
+      localStorage.setItem('svt_weekly', JSON.stringify(weeklyTotals));
+    }
+
+    save();
+    showSyncStatus('✓ Synced', 'ok');
+    renderAll();
+    populateWeekSelect();
+  } catch(e) {
+    console.error('Sync failed', e);
+    showSyncStatus('Offline — local data', 'err');
+    // Fall back to local storage
+    visits = JSON.parse(localStorage.getItem('svt_visits')||'[]');
+    training = JSON.parse(localStorage.getItem('svt_training')||'[]');
+    renderAll();
+  }
+}
+
+async function saveVisitCloud(visit) {
+  await sbUpsert('visits', {
+    id: visit.id,
+    store_id: visit.storeId,
+    date: visit.date,
+    survey: visit.survey,
+    photo: visit.photo,
+    comp: visit.comp,
+    staff_trained: visit.staffTrained||0,
+    personnel: visit.personnel||'',
+    notes: visit.notes||'',
+    ts: visit.ts
+  });
+}
+
+async function deleteVisitCloud(id) {
+  await sbFetch('visits?id=eq.' + id, 'DELETE');
+}
+
+async function saveTrainingCloud(t) {
+  await sbUpsert('training', {
+    id: t.id,
+    store_id: t.storeId,
+    date: t.date,
+    count: t.count,
+    topic: t.topic||'',
+    notes: t.notes||''
+  });
+}
+
+async function saveNoteCloud(storeId, notes) {
+  await sbUpsert('store_notes', { store_id: storeId, notes, updated_at: new Date().toISOString() });
+}
+
+async function saveSalesCloud(salesData, weeklyData) {
+  // Build flat rows for sales_data table
+  const rows = [];
+  Object.entries(salesData).forEach(([storeId, weeks]) => {
+    Object.entries(weeks).forEach(([week, cats]) => {
+      Object.entries(cats).forEach(([cat, v]) => {
+        rows.push({ store_id: storeId, week, category: cat, units: v.u, target: v.t });
+      });
+    });
+  });
+
+  // Upsert in batches of 100
+  for (let i=0; i<rows.length; i+=100) {
+    await sbFetch('sales_data?on_conflict=store_id,week,category', 'POST', rows.slice(i,i+100));
+  }
+
+  // Weekly totals
+  const wtRows = Object.entries(weeklyData).map(([week,d]) => ({ week, units: d.u, target: d.t }));
+  await sbFetch('weekly_totals?on_conflict=week', 'POST', wtRows);
+}
 
 // ─── MONTHLY RESET ────────────────────────────────────────────────────────────
 function checkMonthlyReset(){
@@ -1205,7 +1370,8 @@ function init(){
   populateWeekSelect();
   document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
   document.getElementById('tDate').value=new Date().toISOString().split('T')[0];
-  renderAll();
+  // Load from cloud first, fall back to local
+  loadFromCloud();
 }
 
 function populateStoreDropdowns(){
@@ -1553,7 +1719,12 @@ function parseCSVSales(text,filename){
   renderSales();renderDashboard();
 
   const weeks=Object.keys(newWeekly).sort();
-  status.innerHTML=`<div class="import-status success">✅ Import successful! Processed ${rowsProcessed} rows across weeks ${weeks.join(', ')}. Go to the Sales tab to view.</div>`;
+  status.innerHTML=`<div class="import-status success">✅ Import successful! Processed ${rowsProcessed} rows across weeks ${weeks.join(', ')}. Syncing to cloud...</div>`;
+  showSyncStatus('⟳ Syncing sales data...');
+  saveSalesCloud(newSales, newWeekly).then(() => {
+    showSyncStatus('✓ Sales synced', 'ok');
+    status.innerHTML=`<div class="import-status success">✅ Synced! ${rowsProcessed} rows across weeks ${weeks.join(', ')} — available on all devices.</div>`;
+  });
 }
 
 // ─── TRAINING ─────────────────────────────────────────────────────────────────
@@ -1608,22 +1779,32 @@ function setToggle(field,val){
   document.getElementById(yId).className='toggle-btn'+(val==='Y'?' selected-y':'');
 }
 
-function saveVisit(){
+async function saveVisit(){
   const storeId=document.getElementById('fStore').value;
   const date=document.getElementById('fDate').value;
   if(!storeId||!date){alert('Please select a store and date.');return;}
-  visits.push({id:Math.random().toString(36).substring(2,10),storeId,date,survey:toggleState.survey,photo:toggleState.photo,comp:toggleState.comp,staffTrained:parseInt(document.getElementById('fStaffTrained').value)||0,personnel:document.getElementById('fPersonnel').value,notes:document.getElementById('fNotes').value,ts:Date.now()});
-  save();closeModal('logModal');renderAll();
+  const visit={id:Math.random().toString(36).substring(2,10),storeId,date,survey:toggleState.survey,photo:toggleState.photo,comp:toggleState.comp,staffTrained:parseInt(document.getElementById('fStaffTrained').value)||0,personnel:document.getElementById('fPersonnel').value,notes:document.getElementById('fNotes').value,ts:Date.now()};
+  visits.push(visit);
+  save();
+  closeModal('logModal');
+  renderAll();
+  showSyncStatus('⟳ Saving...');
+  await saveVisitCloud(visit);
+  showSyncStatus('✓ Saved', 'ok');
 }
 
-function deleteVisit(id){if(!confirm('Delete this visit?'))return;visits=visits.filter(v=>v.id!==id);save();renderAll();}
+async function deleteVisit(id){if(!confirm('Delete this visit?'))return;visits=visits.filter(v=>v.id!==id);save();renderAll();showSyncStatus('⟳ Deleting...');await deleteVisitCloud(id);showSyncStatus('✓ Deleted','ok');}
 
-function saveTraining(){
+async function saveTraining(){
   const storeId=document.getElementById('tStore').value;
   const date=document.getElementById('tDate').value;
   if(!storeId||!date){alert('Please select a store and date.');return;}
-  training.push({id:Math.random().toString(36).substring(2,10),storeId,date,count:parseInt(document.getElementById('tCount').value)||1,topic:document.getElementById('tTopic').value,notes:document.getElementById('tNotes').value});
+  const t={id:Math.random().toString(36).substring(2,10),storeId,date,count:parseInt(document.getElementById('tCount').value)||1,topic:document.getElementById('tTopic').value,notes:document.getElementById('tNotes').value};
+  training.push(t);
   save();closeModal('trainingModal');renderAll();
+  showSyncStatus('⟳ Saving...');
+  await saveTrainingCloud(t);
+  showSyncStatus('✓ Saved','ok');
 }
 
 // ─── NAV ───────────────────────────────────────────────────────────────────────
@@ -1686,7 +1867,7 @@ function renderPanelBody(store) {
 
   // Persistent notes
   const noteKey = `svt_note_${store.id}`;
-  const savedNote = localStorage.getItem(noteKey) || '';
+  const savedNote = storeNotes[store.id] || localStorage.getItem(noteKey) || '';
 
   // Sales breakdown for selected week
   const salesData = salesDb[store.id]?.[selectedWeek] || {};
@@ -1774,12 +1955,14 @@ function renderPanelBody(store) {
 
 let noteTimer = null;
 function autosaveNote(storeId, value) {
+  storeNotes[storeId] = value;
   clearTimeout(noteTimer);
-  noteTimer = setTimeout(() => {
+  noteTimer = setTimeout(async () => {
     localStorage.setItem(`svt_note_${storeId}`, value);
+    await saveNoteCloud(storeId, value);
     const ind = document.getElementById('notesSavedIndicator');
     if (ind) { ind.classList.add('show'); setTimeout(() => ind.classList.remove('show'), 2000); }
-  }, 600);
+  }, 800);
 }
 
 function openLogModalForStore() {
