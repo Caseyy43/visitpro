@@ -1,4 +1,4 @@
-const CACHE = 'visitpro-v2';
+const CACHE = 'visitpro-v3';
 const ASSETS = ['/visitpro/', '/visitpro/index.html'];
 
 // Install — cache assets
